@@ -1,5 +1,4 @@
 ---
-# compose_directory_path: false
 compose_file_name: "docker_compose.yml"
 compose_path: "{{ compose_directory_path }}/{{ compose_file_name }}"
 compose_backup_depth: 5

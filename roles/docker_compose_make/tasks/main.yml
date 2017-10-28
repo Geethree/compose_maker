@@ -5,10 +5,7 @@
   file:
     path: "{{ compose_directory_path }}"
     state: directory
-  register: compose_dir_creation
-
-- debug:
-    var: compose_dir_creation
+  register: compose_di_creation
 
 - name: "DOCKER COMPOSE | BACKUP | Get a list of current files in {{ compose_directory_path }}"
   find:
@@ -39,8 +36,7 @@
   copy:
     content: "{{ compose_dict | to_nice_yaml(indent=2) }}"
     dest: "{{ compose_path }}"
-  register: info_docker_compose
 
 - block:
     - include_tasks: backup_compose.yml
-  when: info_docker_compose.changed
+  when: info_docker_compose.changed and tmp_files.results|length > 0
