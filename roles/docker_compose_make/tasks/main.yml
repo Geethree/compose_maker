@@ -5,11 +5,10 @@
   file:
     path: "{{ compose_directory_path }}"
     state: directory
-  register: compose_di_creation
-  changed_when: false
+  register: compose_dir_creation
 
 - debug:
-    var: compose_di_creation
+    var: compose_dir_creation
 
 - name: "DOCKER COMPOSE | BACKUP | Get a list of current files in {{ compose_directory_path }}"
   find:
