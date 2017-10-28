@@ -1,0 +1,47 @@
+---
+- include_tasks: fail_when.yml
+
+- name: DOCKER COMPOSE | CHECK | Ensure that the compose directory is present
+  file:
+    path: "{{ compose_directory_path }}"
+    state: directory
+  register: compose_di_creation
+  changed_when: false
+
+- debug:
+    var: compose_di_creation
+
+- name: "DOCKER COMPOSE | BACKUP | Get a list of current files in {{ compose_directory_path }}"
+  find:
+    path: "{{ compose_directory_path }}"
+  register: files_to_copy
+
+- name: "DOCKER COMPOSE | BACKUP | Create tmp dir for current files"
+  tempfile:
+    state: directory
+    suffix: tmp_dir
+  register: tmp_dir
+  changed_when: false
+
+- name: "DOCKER COMPOSE | BACKUP | Create list of files to back up"
+  set_fact:
+    files_to_copy_paths: "{{ files_to_copy.files | map(attribute='path') | list }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Copy current files to tmp dir"
+  copy:
+    src: "{{ item }}"
+    dest: "{{tmp_dir.path}}"
+    remote_src: true
+  changed_when: false
+  with_items: "{{ files_to_copy_paths }}"
+  register: tmp_files
+
+- name: "DOCKER COMPOSE | Copy docker-compose.py to host"
+  copy:
+    content: "{{ compose_dict | to_nice_yaml(indent=2) }}"
+    dest: "{{ compose_path }}"
+  register: info_docker_compose
+
+- block:
+    - include_tasks: backup_compose.yml
+  when: info_docker_compose.changed

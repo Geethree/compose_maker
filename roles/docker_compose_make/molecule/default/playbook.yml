@@ -1,0 +1,15 @@
+---
+- name: Converge
+  hosts: all
+  pre_tasks:
+    - name: "TEST | DOCKER COMPOSE | Create a tmp dir to test role"
+      tempfile:
+        state: directory
+        suffix: tmp_dir
+      register: tmp_dir
+      changed_when: false
+  roles:
+    - { 
+        role: docker_compose_make,
+        compose_directory_path: "{{ tmp_dir.path }}"
+      }

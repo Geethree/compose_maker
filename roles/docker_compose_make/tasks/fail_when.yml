@@ -1,0 +1,4 @@
+---
+- name: "DOCKER COMPOSE | CHECK | Ensure docker-compose directory has been specified"
+  fail: msg="You must specify the destination directory for the docker-compsose.yml"
+  when: compose_directory_path is undefined

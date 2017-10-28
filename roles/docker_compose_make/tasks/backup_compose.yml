@@ -1,0 +1,44 @@
+---
+- name: "DOCKER COMPOSE | BACKUP | Name the backup dir"
+  set_fact:
+    backup_dir: "{{ compose_directory_path }}/backup/backup_{{ ansible_date_time.epoch }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Ensure the backup dir exists"
+  file:
+    path: "{{ backup_dir }}"
+    state: directory
+
+- name: "DOCKER COMPOSE | BACKUP | Get current directories in the backup dir"
+  find:
+    paths: "{{ compose_directory_path }}/backup"
+    file_type: directory
+  register: directories
+
+- name: "DOCKER COMPOSE | BACKUP | Sort directories in the backup dir from newest to oldest"
+  set_fact:
+    directories_sorted: "{{ directories.files | sort(attribute='mtime', reverse=True) }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Determine all directories older than the most recent"
+  set_fact:
+   directories_to_delete: "{{ directories_sorted[compose_backup_depth|int:] }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Determine all directories older than the most recent {{ compose_backup_depth }}"
+  set_fact:
+    delete_paths: "{{ directories_to_delete | map(attribute='path') | list }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Remove all but the most recent {{ compose_backup_depth }} backups"
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ delete_paths }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Create list of file paths in tmp dir"
+  set_fact:
+    temp_file_paths: "{{tmp_files.results | map(attribute='dest') | list }}"
+
+- name: "DOCKER COMPOSE | BACKUP | Copy files from the tmp dir to the backup dir"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ backup_dir }}"
+    remote_src: true
+  with_items: "{{ temp_file_paths }}"
