@@ -37,6 +37,6 @@
     content: "{{ compose_dict | to_nice_yaml(indent=2) }}"
     dest: "{{ compose_path }}"
 
-- block:
-    - include_tasks: backup_compose.yml
-  when: info_docker_compose.changed and tmp_files.results|length > 0
+# - block:
+#     - include_tasks: backup_compose.yml
+#   when: info_docker_compose.changed and tmp_files.results|length > 0
